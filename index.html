@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Private Chat Rooms</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="login">
+    <h3>Enter Your Name</h3>
+    <input type="text" id="nameInput" placeholder="Your name"><br><br>
+  
+    <h3>Join Existing Room</h3>
+    <input type="text" id="roomInput" placeholder="e.g. abc123"><br>
+    <button onclick="joinChat()">Join Room</button><br><br>
+  
+    <h3>OR</h3>
+    <button onclick="generateRoom()">Generate Private Room</button>
+    <div id="generatedRoom" style="display:none;">
+      <p>Room Code: <span id="newRoomCode"></span></p>
+      <button onclick="copyLink()">Copy Invite Link</button>
+    </div>
+  </div>
+  
+  <div id="chat" style="display: none;">
+    <h3>Room: <span id="roomName"></span></h3>
+    <h4>Online Users</h4>
+    <ul id="users"></ul>
+    <div id="messages"></div>
+    <input id="messageInput" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

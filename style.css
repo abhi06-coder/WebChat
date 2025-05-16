@@ -1,0 +1,160 @@
+/* Reset & Base */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+button, input {
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+input {
+  width: 80%;
+  max-width: 300px;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #4e89ff;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2f6de0;
+}
+
+#login, #chat {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+#generatedRoom {
+  margin-top: 10px;
+}
+
+#newRoomCode {
+  font-weight: bold;
+  color: #2f6de0;
+}
+
+#chat h3, #chat h4 {
+  margin-top: 0;
+}
+
+#messages {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #f9f9f9;
+  height: 250px;
+  overflow-y: auto;
+  margin: 15px auto;
+  padding: 10px;
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+#messages div {
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #e7f0ff;
+  border-radius: 10px;
+  word-wrap: break-word;
+}
+
+#messageInput {
+  width: 80%;
+  max-width: 300px;
+  margin-right: 5px;
+}
+
+#users {
+  list-style-type: none;
+  padding: 0;
+  margin: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#users li {
+  background-color: #d1e6ff;
+  color: #333;
+  margin: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.message {
+  background-color: #e7f0ff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  max-width: 75%;
+  clear: both;
+}
+
+.message.me {
+  background-color: #cce5ff;
+  margin-left: auto;
+  text-align: right;
+}
+
+.message .time {
+  font-size: 0.8em;
+  color: #666;
+  display: block;
+  margin-top: 4px;
+}
+
+.actions button {
+  font-size: 0.8em;
+  margin: 2px;
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.actions {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.2s ease;
+}
+
+.message.show-actions .actions {
+  opacity: 1;
+  transform: scale(1);
+}
+
+
+.reactions {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+#actionMenu div {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+#actionMenu div:hover {
+  background-color: #f0f0f0;
+}
