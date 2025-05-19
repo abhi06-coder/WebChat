@@ -194,14 +194,16 @@ socket.on('kicked', () => {
 
 const actionMenu = document.createElement('div');
 actionMenu.id = 'actionMenu';
-actionMenu.style.position = 'absolute';
-actionMenu.style.display = 'none';
-actionMenu.style.zIndex = 1000;
-actionMenu.style.background = '#fff';
-actionMenu.style.border = '1px solid #ccc';
-actionMenu.style.borderRadius = '6px';
-actionMenu.style.padding = '5px';
-actionMenu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+Object.assign(actionMenu.style, {
+  position: 'absolute',
+  display: 'none',
+  zIndex: 1000,
+  background: '#fff',
+  border: '1px solid #ccc',
+  borderRadius: '6px',
+  padding: '5px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+});
 document.body.appendChild(actionMenu);
 
 function showActionsMenu(x, y, messageId, isMe) {
@@ -229,7 +231,6 @@ document.addEventListener('click', (e) => {
   });
 });
 
-// Ask permission for notifications
 if ('Notification' in window && Notification.permission !== 'granted') {
   Notification.requestPermission();
 }
