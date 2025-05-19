@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Private Chat Rooms</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="login">
+    <h3>Enter Your Name</h3>
+    <input type="text" id="nameInput" placeholder="Your name" autocomplete="off"><br><br>
+
+    <h3>Join Existing Room</h3>
+    <input type="text" id="roomInput" placeholder="e.g. abc123" autocomplete="off"><br>
+    <input type="password" id="joinPassword" placeholder="Room password"><br>
+    <button type="button" onclick="joinChat(false)">Join Room</button><br><br>
+
+    <h3>OR</h3>
+    <input type="password" id="createPassword" placeholder="Set a password for room"><br>
+    <button type="button" onclick="generateRoom()">Generate Private Room</button>
+
+    <div id="generatedRoom" style="display:none;">
+      <p>Room Code: <span id="newRoomCode"></span></p>
+      <button type="button" onclick="copyLink()">Copy Invite Link</button>
+    </div>
+  </div>
+
+  <div id="chat" style="display: none;">
+    <h3>Room: <span id="roomName"></span></h3>
+    <h4>Online Users</h4>
+    <ul id="users"></ul>
+    <div id="messages"></div>
+    <input id="messageInput" placeholder="Type your message...">
+    <button type="button" onclick="sendMessage()">Send</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Autofill room code if shared via invite link
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const preRoom = params.get('room');
+      if (preRoom) {
+        document.getElementById('roomInput').value = preRoom;
+      }
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
