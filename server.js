@@ -1,49 +1,43 @@
 const express = require('express');
-const mysql = require('mysql2/promise');
-const app = express();
-const http = require('http').createServer(app);
+const admin = require('firebase-admin');
+const http = require('http').createServer(express());
 const io = require('socket.io')(http);
+const app = express();
+const path = require('path');
+
+// Replace with the correct path to your serviceAccountKey file
+const serviceAccount = require('./serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://webchat-d6455-default-rtdb.asia-southeast1.firebasedatabase.app'
+});
+
+const db = admin.database();
 
 app.use(express.static('public'));
 
 const messageReactions = {};
 const usersInRooms = {};
 
-const dbConfig = {
-  host: 'sql105.infinityfree.com',
-  user: 'if0_39020224',
-  password: 'E3EPvmCv0uYgS',
-  database: 'if0_39020224_webchat'
-};
-
-
 async function getRoom(code) {
-  const conn = await mysql.createConnection(dbConfig);
-  const [rows] = await conn.execute('SELECT * FROM rooms WHERE code = ?', [code]);
-  await conn.end();
-  return rows[0];
+  const snapshot = await db.ref(`rooms/${code}`).once('value');
+  return snapshot.exists() ? snapshot.val() : null;
 }
 
-async function createRoom(code, password, admin_id) {
-  const conn = await mysql.createConnection(dbConfig);
-  await conn.execute('INSERT INTO rooms (code, password, admin_id) VALUES (?, ?, ?)', [code, password, admin_id]);
-  await conn.end();
+async function createRoom(code, password, adminId) {
+  await db.ref(`rooms/${code}`).set({ password, admin_id: adminId });
 }
 
 async function updateAdmin(code, newAdminId) {
-  const conn = await mysql.createConnection(dbConfig);
-  await conn.execute('UPDATE rooms SET admin_id = ? WHERE code = ?', [newAdminId, code]);
-  await conn.end();
+  await db.ref(`rooms/${code}/admin_id`).set(newAdminId);
 }
 
 async function deleteRoom(code) {
-  const conn = await mysql.createConnection(dbConfig);
-  await conn.execute('DELETE FROM rooms WHERE code = ?', [code]);
-  await conn.end();
+  await db.ref(`rooms/${code}`).remove();
 }
 
 io.on('connection', socket => {
-
   socket.on('join-room', async ({ userName, roomCode, password, create }) => {
     if (!roomCode || roomCode.length > 20 || password.length > 30) return;
 
