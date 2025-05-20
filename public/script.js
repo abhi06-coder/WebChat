@@ -50,6 +50,10 @@ function showConfirmLeaveModal() {
     confirmLeaveOverlay.classList.remove('hidden');
 }
 
+function hideConfirmLeaveModal() {
+    confirmLeaveOverlay.classList.add('hidden');
+}
+
 function cancelLeave() {
     confirmLeaveOverlay.classList.add('hidden');
 }
