@@ -65,7 +65,7 @@
         <section id="chat-section" class="card hidden">
             <header class="chat-header">
                 <h1 class="room-title">Room: <span id="roomName"></span></h1>
-                <div class= "header-actions">
+                <div class="header-actions">
                     <button class="btn small-btn" onclick="toggleUsersList()">Users <i class="fas fa-users"></i></button>
                     <button class="btn small-btn leave-btn" onclick="confirmLeaveRoom()">Leave <i class="fas fa-sign-out-alt"></i></button>
                 </div>
@@ -107,18 +107,7 @@
         </div>
     </div>
 
-
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        // Autofill room code if shared via invite link
-        window.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const preRoom = params.get('room');
-            if (preRoom) {
-                document.getElementById('roomInput').value = preRoom;
-            }
-        });
-    </script>
     <script src="script.js"></script>
 </body>
 </html>
