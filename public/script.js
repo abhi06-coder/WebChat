@@ -12,13 +12,7 @@ const messagesDiv = document.getElementById('messages');
 const messageInput = document.getElementById('messageInput');
 const typingIndicator = document.getElementById('typing-indicator');
 
-const loadingOverlay = document.getElementById('loading-overlay');
-const errorOverlay = document.getElementById('error-overlay');
-const errorMessageP = document.getElementById('error-message');
-const confirmLeaveOverlay = document.getElementById('confirm-leave-overlay');
-const kickUserModal = document.getElementById('kick-user-modal');
-const kickUsernameDisplay = document.getElementById('kick-username-display');
-const confirmKickBtn = document.getElementById('confirmKickBtn');
+// Removed: loadingOverlay, errorOverlay, errorMessageP, confirmLeaveOverlay, kickUserModal, kickUsernameDisplay, confirmKickBtn
 
 const socket = io();
 
@@ -28,48 +22,7 @@ let currentAdminId = '';
 let isTyping = false;
 let typingTimeout;
 
-function showLoading(message = 'Connecting...') {
-    loadingOverlay.classList.remove('hidden');
-    loadingOverlay.querySelector('.loading-text').textContent = message;
-}
-
-function hideLoading() {
-    loadingOverlay.classList.add('hidden');
-}
-
-function showError(message) {
-    errorMessageP.textContent = message;
-    errorOverlay.classList.remove('hidden');
-}
-
-function hideError() {
-    errorOverlay.classList.add('hidden');
-}
-
-// --- IMPORTANT: Moved this function definition up ---
-function hideConfirmLeaveModal() {
-    confirmLeaveOverlay.classList.add('hidden');
-}
-// --- End of moved function ---
-
-function showConfirmLeaveModal() {
-    confirmLeaveOverlay.classList.remove('hidden');
-}
-
-function cancelLeave() {
-    confirmLeaveOverlay.classList.add('hidden');
-}
-
-function showKickModal(username, userId) {
-    kickUsernameDisplay.textContent = username;
-    kickUserModal.classList.remove('hidden');
-    confirmKickBtn.dataset.targetId = userId;
-}
-
-function hideKickModal() {
-    kickUserModal.classList.add('hidden');
-    confirmKickBtn.dataset.targetId = '';
-}
+// Removed: showLoading, hideLoading, showError, hideError, showConfirmLeaveModal, cancelLeave, showKickModal, hideKickModal
 
 window.joinChat = function(create) {
     const userName = nameInput.value.trim();
@@ -77,19 +30,19 @@ window.joinChat = function(create) {
     const password = create ? createPasswordInput.value : joinPasswordInput.value;
 
     if (!userName) {
-        showError('Please enter your name.');
+        alert('Please enter your name.'); // Changed from showError
         return;
     }
     if (!roomCode && !create) {
-        showError('Please enter a room code.');
+        alert('Please enter a room code.'); // Changed from showError
         return;
     }
     if (create && !password) {
-        showError('A password is required to create a new room.');
+        alert('A password is required to create a new room.'); // Changed from showError
         return;
     }
 
-    showLoading();
+    // Removed showLoading();
 
     socket.emit('join-room', { userName, roomCode, password, create });
 };
@@ -97,7 +50,7 @@ window.joinChat = function(create) {
 window.generateRoom = function() {
     const password = createPasswordInput.value;
     if (!password) {
-        showError('Please set a password for the new room.');
+        alert('Please set a password for the new room.'); // Changed from showError
         return;
     }
 
@@ -113,11 +66,11 @@ window.joinGeneratedRoom = function() {
     const password = createPasswordInput.value;
 
     if (!userName) {
-        showError('Please enter your name before joining the generated room.');
+        alert('Please enter your name before joining the generated room.'); // Changed from showError
         return;
     }
     if (!password) {
-        showError('Please set a password for the new room before joining.');
+        alert('Please set a password for the new room before joining.'); // Changed from showError
         return;
     }
 
@@ -134,7 +87,7 @@ window.copyLink = function() {
         alert('Invite link copied to clipboard!');
     }).catch(err => {
         console.error('Failed to copy: ', err);
-        showError('Failed to copy link. Please copy manually: ' + inviteLink);
+        alert('Failed to copy link. Please copy manually: ' + inviteLink); // Changed from showError
     });
 };
 
@@ -150,7 +103,10 @@ window.sendMessage = function() {
 };
 
 window.confirmLeaveRoom = function() {
-    showConfirmLeaveModal();
+    // Reverted to simple confirm dialog
+    if (confirm("Are you sure you want to leave this room?")) {
+        leaveRoom();
+    }
 };
 
 window.leaveRoom = function() {
@@ -164,39 +120,31 @@ window.leaveRoom = function() {
     currentRoomCode = '';
     currentUserName = '';
     currentAdminId = '';
-    hideConfirmLeaveModal(); // This call should now work
-    hideLoading();
-    hideError();
+    // Removed hideConfirmLeaveModal();
+    // Removed hideLoading();
+    // Removed hideError();
     location.reload();
 };
 
 socket.on('connect', () => {
     console.log('Connected to server with ID:', socket.id);
-    hideLoading();
+    // Removed hideLoading();
 });
 
 socket.on('room-error', (message) => {
-    hideLoading();
-    showError(message);
+    // Removed hideLoading();
+    alert(message); // Changed from showError
+    console.error('Room Error:', message); // Log error for debugging
 });
 
 socket.on('room-joined', ({ roomCode, userName }) => {
-    console.log('DEBUG: room-joined event fired!'); // ADD THIS LINE
-    console.log('DEBUG: Attempting to hide loading and show chat...'); // ADD THIS LINE
-
-    hideLoading();
+    // Removed hideLoading();
     currentRoomCode = roomCode;
     currentUserName = userName;
     roomNameSpan.textContent = roomCode;
-
-    console.log('DEBUG: loginSection:', loginSection); // ADD THIS LINE
-    console.log('DEBUG: chatSection:', chatSection); // ADD THIS LINE
-
     loginSection.classList.add('hidden');
     chatSection.classList.remove('hidden');
     messageInput.focus();
-
-    console.log('DEBUG: UI update commands executed.'); // ADD THIS LINE
 });
 
 socket.on('room-users', ({ users, adminId }) => {
@@ -213,7 +161,12 @@ socket.on('room-users', ({ users, adminId }) => {
             const kickBtn = document.createElement('button');
             kickBtn.classList.add('kick-button');
             kickBtn.innerHTML = '<i class="fas fa-times-circle"></i> Kick';
-            kickBtn.onclick = () => showKickModal(user.name, user.id);
+            kickBtn.onclick = () => {
+                // Reverted to simple confirm dialog
+                if (confirm(`Are you sure you want to kick ${user.name}?`)) {
+                    socket.emit('kick-user', { roomCode: currentRoomCode, targetId: user.id });
+                }
+            };
             li.appendChild(kickBtn);
         }
         usersList.appendChild(li);
@@ -329,8 +282,8 @@ socket.on('user-stop-typing', () => {
 });
 
 socket.on('kicked', () => {
-    alert('You have been kicked from the room!');
-    leaveRoom();
+    alert('You have been kicked from the room.'); // Changed from showKickModal/hideKickModal
+    location.reload();
 });
 
 messageInput.addEventListener('input', () => {
@@ -349,13 +302,7 @@ function stopTyping() {
     socket.emit('stop-typing', currentRoomCode);
 }
 
-confirmKickBtn.addEventListener('click', () => {
-    const targetId = confirmKickBtn.dataset.targetId;
-    if (targetId && currentRoomCode) {
-        socket.emit('kick-user', { roomCode: currentRoomCode, targetId: targetId });
-    }
-    hideKickModal();
-});
+// Removed confirmKickBtn.addEventListener logic
 
 window.toggleUsersList = function() {
     const usersSidebar = document.getElementById('users-list');
@@ -395,11 +342,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('roomInput').value = preRoom;
     }
 
-    // These calls should now work without error because the functions are defined above
-    hideLoading();
-    hideError();
-    hideConfirmLeaveModal();
-    hideKickModal();
+    // Removed calls to hideLoading, hideError, hideConfirmLeaveModal, hideKickModal
 });
 
 messageInput.addEventListener('keypress', function(e) {
