@@ -18,7 +18,7 @@ const ioServer = require('socket.io')(httpServer); // Renamed to ioServer for cl
 // --- MongoDB Connection Setup ---
 // IMPORTANT: Replace this placeholder with your actual, URL-encoded connection string.
 // Also, set this as an environment variable named MONGODB_URI on Render.
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://abhi:<db_password>@webchat.1vvhscv.mongodb.net/?retryWrites=true&w=majority&appName=webchat"
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://abhi:Abhinav%4006@webchat.1vvhscv.mongodb.net/chatdb?retryWrites=true&w=majority&appName=webchat";
 
 const client = new MongoClient(MONGODB_URI);
 let roomsCollection; // This will hold our reference to the 'rooms' collection
