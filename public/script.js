@@ -181,13 +181,22 @@ socket.on('room-error', (message) => {
 });
 
 socket.on('room-joined', ({ roomCode, userName }) => {
+    console.log('DEBUG: room-joined event fired!'); // ADD THIS LINE
+    console.log('DEBUG: Attempting to hide loading and show chat...'); // ADD THIS LINE
+
     hideLoading();
     currentRoomCode = roomCode;
     currentUserName = userName;
     roomNameSpan.textContent = roomCode;
+
+    console.log('DEBUG: loginSection:', loginSection); // ADD THIS LINE
+    console.log('DEBUG: chatSection:', chatSection); // ADD THIS LINE
+
     loginSection.classList.add('hidden');
     chatSection.classList.remove('hidden');
     messageInput.focus();
+
+    console.log('DEBUG: UI update commands executed.'); // ADD THIS LINE
 });
 
 socket.on('room-users', ({ users, adminId }) => {
