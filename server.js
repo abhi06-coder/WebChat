@@ -1,8 +1,15 @@
 const express = require('express');
 const admin = require('firebase-admin');
-const http = require('http').createServer(express());
+const path = require('path'); // Make sure this is required
+
+// 1. Create the Express application instance FIRST
+const app = express(); // This is the instance you will configure
+
+// 2. Then, create the HTTP server using that 'app' instance
+const http = require('http').createServer(app); // <-- Pass 'app' here!
+
+// 3. Attach Socket.IO to the 'http' server
 const io = require('socket.io')(http);
-const path = require('path');
 
 // Replace with the correct path to your serviceAccountKey file
 const serviceAccount = require('./serviceAccountKey.json');
@@ -14,13 +21,14 @@ admin.initializeApp({
 
 const db = admin.database();
 
-const app = express();
+// These configurations for 'app' will now be correctly handled by 'http'
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// ... (rest of your server.js code, including http.listen) ...
 const messageReactions = {};
 const usersInRooms = {};
 
