@@ -138,13 +138,49 @@ socket.on('room-error', (message) => {
 });
 
 socket.on('room-joined', ({ roomCode, userName }) => {
-    // Removed hideLoading();
+    console.log('DEBUG: room-joined event received!'); // New log
+    console.log('DEBUG: Current roomCode:', roomCode, 'userName:', userName); // New log
+
     currentRoomCode = roomCode;
     currentUserName = userName;
     roomNameSpan.textContent = roomCode;
+
+    console.log('DEBUG: Before classList operations.'); // New log
+    console.log('DEBUG: loginSection element:', loginSection); // New log: Check if it's null/undefined
+    console.log('DEBUG: chatSection element:', chatSection);   // New log: Check if it's null/undefined
+
     loginSection.classList.add('hidden');
     chatSection.classList.remove('hidden');
+
+    console.log('DEBUG: After classList operations.'); // New log
+    console.log('DEBUG: loginSection now has hidden?', loginSection.classList.contains('hidden')); // New log
+    console.log('DEBUG: chatSection now has hidden?', chatSection.classList.contains('hidden'));   // New log
+
     messageInput.focus();
+
+    console.log('DEBUG: UI transition complete attempt.'); // New log
+});socket.on('room-joined', ({ roomCode, userName }) => {
+    console.log('DEBUG: room-joined event received!'); // New log
+    console.log('DEBUG: Current roomCode:', roomCode, 'userName:', userName); // New log
+
+    currentRoomCode = roomCode;
+    currentUserName = userName;
+    roomNameSpan.textContent = roomCode;
+
+    console.log('DEBUG: Before classList operations.'); // New log
+    console.log('DEBUG: loginSection element:', loginSection); // New log: Check if it's null/undefined
+    console.log('DEBUG: chatSection element:', chatSection);   // New log: Check if it's null/undefined
+
+    loginSection.classList.add('hidden');
+    chatSection.classList.remove('hidden');
+
+    console.log('DEBUG: After classList operations.'); // New log
+    console.log('DEBUG: loginSection now has hidden?', loginSection.classList.contains('hidden')); // New log
+    console.log('DEBUG: chatSection now has hidden?', chatSection.classList.contains('hidden'));   // New log
+
+    messageInput.focus();
+
+    console.log('DEBUG: UI transition complete attempt.'); // New log
 });
 
 socket.on('room-users', ({ users, adminId }) => {
