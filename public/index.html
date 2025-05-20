@@ -10,18 +10,6 @@
 </head>
 <body>
 
-    <div id="loading-overlay" class="overlay">
-        <div class="spinner"></div>
-        <p class="loading-text">Connecting...</p>
-    </div>
-
-    <div id="error-overlay" class="overlay hidden">
-        <div class="error-modal">
-            <p id="error-message"></p>
-            <button onclick="hideError()">OK</button>
-        </div>
-    </div>
-
     <main class="container">
         <section id="login-section" class="card">
             <h1 class="card-title">Welcome to WebChat</h1>
@@ -88,24 +76,6 @@
             </div>
         </section>
     </main>
-
-    <div id="confirm-leave-overlay" class="overlay hidden">
-        <div class="confirm-modal">
-            <p>Are you sure you want to leave this room?</p>
-            <button class="btn primary-btn" onclick="leaveRoom()">Yes, Leave</button>
-            <button class="btn secondary-btn" onclick="cancelLeave()">Cancel</button>
-        </div>
-    </div>
-
-    <div id="kick-user-modal" class="overlay hidden">
-        <div class="kick-modal">
-            <h3>Kick User</h3>
-            <p id="kick-username-display"></p>
-            <p>Are you sure you want to kick this user?</p>
-            <button class="btn primary-btn" id="confirmKickBtn">Kick</button>
-            <button class="btn secondary-btn" onclick="hideKickModal()">Cancel</button>
-        </div>
-    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
