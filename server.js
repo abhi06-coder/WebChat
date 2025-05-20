@@ -1,17 +1,10 @@
 const express = require('express');
 const admin = require('firebase-admin');
-const path = require('path'); // Make sure this is required
-
-// 1. Create the Express application instance FIRST
-const app = express(); // This is the instance you will configure
-
-// 2. Then, create the HTTP server using that 'app' instance
-const http = require('http').createServer(app); // <-- Pass 'app' here!
-
-// 3. Attach Socket.IO to the 'http' server
+const path = require('path');
+const app = express();
+const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-// Replace with the correct path to your serviceAccountKey file
 const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
@@ -21,14 +14,11 @@ admin.initializeApp({
 
 const db = admin.database();
 
-// These configurations for 'app' will now be correctly handled by 'http'
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ... (rest of your server.js code, including http.listen) ...
 const messageReactions = {};
 const usersInRooms = {};
 
@@ -36,8 +26,7 @@ async function getRoom(code) {
     try {
         const snapshot = await db.ref(`rooms/${code}`).once('value');
         return snapshot.exists() ? snapshot.val() : null;
-    } catch (error) {
-        console.error("Error getting room:", error);
+    } catch {
         return null;
     }
 }
@@ -46,8 +35,7 @@ async function createRoom(code, password, adminId) {
     try {
         await db.ref(`rooms/${code}`).set({ password, admin_id: adminId });
         return true;
-    } catch (error) {
-        console.error("Error creating room:", error);
+    } catch {
         return false;
     }
 }
@@ -56,8 +44,7 @@ async function updateAdmin(code, newAdminId) {
     try {
         await db.ref(`rooms/${code}/admin_id`).set(newAdminId);
         return true;
-    } catch (error) {
-        console.error("Error updating admin:", error);
+    } catch {
         return false;
     }
 }
@@ -66,8 +53,7 @@ async function deleteRoom(code) {
     try {
         await db.ref(`rooms/${code}`).remove();
         return true;
-    } catch (error) {
-        console.error("Error deleting room:", error);
+    } catch {
         return false;
     }
 }
@@ -75,21 +61,21 @@ async function deleteRoom(code) {
 io.on('connection', socket => {
     socket.on('join-room', async ({ userName, roomCode, password, create }) => {
         if (!roomCode || roomCode.trim() === "" || roomCode.length > 20) {
-            socket.emit('room-error', 'Invalid room code. Please enter a valid code (max 20 characters).');
+            socket.emit('room-error', 'Invalid room code.');
             return;
         }
         if (!userName || userName.trim() === "") {
-            socket.emit('room-error', 'Please enter your name.');
+            socket.emit('room-error', 'Enter your name.');
             return;
         }
         if (password && password.length > 30) {
-            socket.emit('room-error', 'Invalid password (max 30 characters).');
+            socket.emit('room-error', 'Password too long.');
             return;
         }
 
         roomCode = roomCode.trim();
         userName = userName.trim();
-        password = password ? password : ""; // Ensure password is a string
+        password = password || "";
 
         const room = await getRoom(roomCode);
 
@@ -99,13 +85,13 @@ io.on('connection', socket => {
                 return;
             }
             if (!password) {
-                socket.emit('room-error', 'A password is required to create a new private room.');
+                socket.emit('room-error', 'Password required to create room.');
                 return;
             }
             if (await createRoom(roomCode, password, socket.id)) {
                 usersInRooms[roomCode] = {};
             } else {
-                socket.emit('room-error', 'Failed to create the room. Please try again.');
+                socket.emit('room-error', 'Room creation failed.');
                 return;
             }
         } else {
@@ -122,25 +108,21 @@ io.on('connection', socket => {
         if (!usersInRooms[roomCode]) usersInRooms[roomCode] = {};
         usersInRooms[roomCode][socket.id] = userName;
 
-        try {
-            const updatedRoom = await getRoom(roomCode);
-            io.to(roomCode).emit('room-users', {
-                users: Object.entries(usersInRooms[roomCode]).map(([id, name]) => ({
-                    id, name, isAdmin: id === updatedRoom?.admin_id
-                })),
-                adminId: updatedRoom?.admin_id
-            });
+        const updatedRoom = await getRoom(roomCode);
+        io.to(roomCode).emit('room-users', {
+            users: Object.entries(usersInRooms[roomCode]).map(([id, name]) => ({
+                id, name, isAdmin: id === updatedRoom?.admin_id
+            })),
+            adminId: updatedRoom?.admin_id
+        });
 
-            io.to(roomCode).emit('chat-message', {
-                userName: 'System',
-                text: `${userName} joined the chat.`,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                messageId: `sys-${Date.now()}`,
-                senderId: 'system'
-            });
-        } catch (error) {
-            console.error("Error during post-join actions:", error);
-        }
+        io.to(roomCode).emit('chat-message', {
+            userName: 'System',
+            text: `${userName} joined.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            messageId: `sys-${Date.now()}`,
+            senderId: 'system'
+        });
     });
 
     socket.on('chat-message', ({ roomCode, userName, text, time, messageId }) => {
@@ -179,9 +161,6 @@ io.on('connection', socket => {
         if (existing) {
             existing.count--;
             existing.users = existing.users.filter(u => u !== userName);
-            if (existing.count === 0) {
-                messageReactions[roomCode][messageId] = reactions.filter(r => r.count > 0);
-            }
         } else {
             const reaction = reactions.find(r => r.emoji === emoji);
             if (reaction) {
@@ -192,9 +171,11 @@ io.on('connection', socket => {
             }
         }
 
+        messageReactions[roomCode][messageId] = reactions.filter(r => r.count > 0);
+
         io.to(roomCode).emit('update-reactions', {
             messageId,
-            reactions: messageReactions[roomCode][messageId].filter(r => r.count > 0)
+            reactions: messageReactions[roomCode][messageId]
         });
     });
 
@@ -212,35 +193,31 @@ io.on('connection', socket => {
 
     socket.on('kick-user', async ({ roomCode, targetId }) => {
         if (!roomCode || !targetId) return;
-        try {
-            const room = await getRoom(roomCode);
-            if (!room || socket.id !== room.admin_id) return;
+        const room = await getRoom(roomCode);
+        if (!room || socket.id !== room.admin_id) return;
 
-            const kickedSocket = io.sockets.sockets.get(targetId);
-            if (kickedSocket) {
-                kickedSocket.emit('kicked');
-                kickedSocket.leave(roomCode);
-            }
-            delete usersInRooms[roomCode][targetId];
-
-            const updatedRoom = await getRoom(roomCode);
-            io.to(roomCode).emit('room-users', {
-                users: Object.entries(usersInRooms[roomCode]).map(([id, name]) => ({
-                    id, name, isAdmin: id === updatedRoom?.admin_id
-                })),
-                adminId: updatedRoom?.admin_id
-            });
-
-            io.to(roomCode).emit('chat-message', {
-                userName: 'System',
-                text: `A user was kicked from the room.`,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                messageId: `sys-${Date.now()}`,
-                senderId: 'system'
-            });
-        } catch (error) {
-            console.error("Error during kick user:", error);
+        const kickedSocket = io.sockets.sockets.get(targetId);
+        if (kickedSocket) {
+            kickedSocket.emit('kicked');
+            kickedSocket.leave(roomCode);
         }
+        delete usersInRooms[roomCode][targetId];
+
+        const updatedRoom = await getRoom(roomCode);
+        io.to(roomCode).emit('room-users', {
+            users: Object.entries(usersInRooms[roomCode]).map(([id, name]) => ({
+                id, name, isAdmin: id === updatedRoom?.admin_id
+            })),
+            adminId: updatedRoom?.admin_id
+        });
+
+        io.to(roomCode).emit('chat-message', {
+            userName: 'System',
+            text: `A user was kicked.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            messageId: `sys-${Date.now()}`,
+            senderId: 'system'
+        });
     });
 
     socket.on('disconnect', async () => {
@@ -248,49 +225,44 @@ io.on('connection', socket => {
         if (!roomCode || !usersInRooms[roomCode] || !socket.userName) return;
 
         const userName = socket.userName;
-
         delete usersInRooms[roomCode][socket.id];
 
-        try {
-            const room = await getRoom(roomCode);
-            if (socket.id === room?.admin_id) {
-                const remainingUsers = Object.keys(usersInRooms[roomCode]);
-                if (remainingUsers.length > 0) {
-                    await updateAdmin(roomCode, remainingUsers[0]);
-                } else {
-                    await deleteRoom(roomCode);
-                    delete usersInRooms[roomCode];
-                    delete messageReactions[roomCode]; // Clean up reactions for the room
-                }
-            }
-
-            const updatedRoom = await getRoom(roomCode);
-            io.to(roomCode).emit('room-users', {
-                users: Object.entries(usersInRooms[roomCode]).map(([id, name]) => ({
-                    id, name, isAdmin: id === updatedRoom?.admin_id
-                })),
-                adminId: updatedRoom?.admin_id
-            });
-
-            io.to(roomCode).emit('chat-message', {
-                userName: 'System',
-                text: `${userName} left the chat.`,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                messageId: `sys-${Date.now()}`,
-                senderId: 'system'
-            });
-
-            if (Object.keys(usersInRooms[roomCode] || {}).length === 0 && room) {
+        const room = await getRoom(roomCode);
+        if (socket.id === room?.admin_id) {
+            const remainingUsers = Object.keys(usersInRooms[roomCode]);
+            if (remainingUsers.length > 0) {
+                await updateAdmin(roomCode, remainingUsers[0]);
+            } else {
                 await deleteRoom(roomCode);
                 delete usersInRooms[roomCode];
-                delete messageReactions[roomCode]; // Clean up reactions if room is empty
+                delete messageReactions[roomCode];
             }
-        } catch (error) {
-            console.error("Error during disconnect:", error);
-        } finally {
-            delete socket.roomCode;
-            delete socket.userName;
         }
+
+        const updatedRoom = await getRoom(roomCode);
+        io.to(roomCode).emit('room-users', {
+            users: Object.entries(usersInRooms[roomCode]).map(([id, name]) => ({
+                id, name, isAdmin: id === updatedRoom?.admin_id
+            })),
+            adminId: updatedRoom?.admin_id
+        });
+
+        io.to(roomCode).emit('chat-message', {
+            userName: 'System',
+            text: `${userName} left.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            messageId: `sys-${Date.now()}`,
+            senderId: 'system'
+        });
+
+        if (Object.keys(usersInRooms[roomCode] || {}).length === 0 && room) {
+            await deleteRoom(roomCode);
+            delete usersInRooms[roomCode];
+            delete messageReactions[roomCode];
+        }
+
+        delete socket.roomCode;
+        delete socket.userName;
     });
 });
 
