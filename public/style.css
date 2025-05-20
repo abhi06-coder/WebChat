@@ -1,61 +1,48 @@
-/* Universal Box-Sizing and Font Smoothing */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    font-size: 16px; /* Base font size */
-}
-
+/* General Body and Container Styles */
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #6dd5ed, #2193b0); /* Modern gradient background */
-    color: #333;
+    background-color: #f0f2f5;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Full viewport height */
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    min-height: 100vh;
+    margin: 0;
+    color: #333;
     line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Container and Card Styling --- */
 .container {
-    width: 100%;
-    max-width: 900px; /* Max width for larger screens */
-    margin: 20px; /* Spacing around the main container */
-    display: flex;
-    justify-content: center; /* Center content horizontally */
-    align-items: flex-start; /* Align to top for longer content */
-}
-
-.card {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    width: 100%; /* Take full width within container */
-    max-width: 450px; /* Max width for login form */
-    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Spacing between elements */
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Card Styles (for login and chat sections) */
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .card-title {
-    color: #2193b0;
-    margin-bottom: 20px;
-    font-size: 2.2rem;
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 30px;
+    font-size: 2em;
     font-weight: 700;
 }
 
-/* --- Input Group Styling --- */
+/* Input Group Styles */
 .input-group {
-    text-align: left;
+    margin-bottom: 20px;
 }
 
 .input-group label {
@@ -63,99 +50,33 @@ body {
     margin-bottom: 8px;
     font-weight: 600;
     color: #555;
-    font-size: 0.95rem;
 }
 
-input[type="text"],
-input[type="password"] {
+.input-group input[type="text"],
+.input-group input[type="password"] {
     width: 100%;
-    padding: 14px 18px;
+    padding: 12px 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    font-size: 1rem;
-    color: #333;
-    transition: all 0.3s ease;
-    background-color: #f8f8f8;
+    box-sizing: border-box;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
 }
 
-input[type="text"]:focus,
-input[type="password"]:focus {
-    border-color: #6dd5ed;
+.input-group input[type="text"]:focus,
+.input-group input[type="password"]:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.3);
-    background-color: #fff;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
 }
 
-/* --- Button Styling --- */
-.btn {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: inline-flex; /* For icon alignment */
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.btn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.primary-btn {
-    background-color: #2193b0;
-    color: #fff;
-}
-
-.secondary-btn {
-    background-color: #6dd5ed;
-    color: #fff;
-}
-
-.small-btn {
-    padding: 8px 15px;
-    font-size: 0.9rem;
-    background-color: #eee;
-    color: #555;
-    border: 1px solid #ccc;
-}
-
-.small-btn:hover {
-    background-color: #ddd;
-}
-
-.send-btn {
-    background-color: #2193b0;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 50px; /* Pill shape */
-    box-shadow: 0 5px 15px rgba(33, 147, 176, 0.3);
-}
-
-.send-btn:hover {
-    background-color: #1a7b92;
-}
-
-.leave-btn {
-    background-color: #e74c3c; /* Red color for leave */
-    color: #fff;
-}
-
-.leave-btn:hover {
-    background-color: #c0392b;
-}
-
-/* --- Dividers and Sections --- */
+/* Divider for login section */
 .divider {
-    font-weight: 600;
-    color: #aaa;
-    margin: 20px 0;
+    text-align: center;
+    margin: 30px 0;
     position: relative;
+    color: #aaa;
+    font-weight: 600;
 }
 
 .divider::before,
@@ -176,532 +97,455 @@ input[type="password"]:focus {
     right: 0;
 }
 
+/* Room Section Styles */
 .room-section {
-    padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
-    text-align: left;
-    margin-top: 20px;
-}
-
-.room-section:first-of-type {
-    border-top: none; /* No top border for the first section */
-    margin-top: 0;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee;
 }
 
 .room-section h2 {
-    font-size: 1.3rem;
-    color: #555;
-    margin-bottom: 15px;
+    text-align: center;
+    color: #666;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-block;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
     font-weight: 600;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
 }
 
-.room-section .input-group {
-    margin-bottom: 15px;
+.btn:hover {
+    transform: translateY(-2px);
 }
 
-/* --- Generated Room Styling --- */
+.primary-btn {
+    background-color: #4CAF50;
+    color: white;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.primary-btn:hover {
+    background-color: #45a049;
+}
+
+.secondary-btn {
+    background-color: #007bff;
+    color: white;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.secondary-btn:hover {
+    background-color: #0056b3;
+}
+
+.small-btn {
+    padding: 8px 15px;
+    font-size: 0.9em;
+    margin-top: 10px;
+    margin-right: 10px; /* For buttons side-by-side */
+    background-color: #6c757d;
+    color: white;
+}
+
+.small-btn:hover {
+    background-color: #5a6268;
+}
+
+.send-btn {
+    background-color: #2196F3;
+    color: white;
+    padding: 12px 20px;
+    margin-left: 10px;
+}
+
+.send-btn:hover {
+    background-color: #0b7dda;
+}
+
+.leave-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.leave-btn:hover {
+    background-color: #da190b;
+}
+
+/* Generated Room Section */
 .generated-room {
-    background-color: #e8f9fd;
-    border: 1px solid #a8e6f6;
-    border-radius: 10px;
+    background-color: #e8f5e9; /* Light green background */
+    border: 1px solid #a5d6a7;
+    border-radius: 8px;
     padding: 20px;
-    margin-top: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
+    margin-top: 30px;
+    text-align: center;
 }
 
 .generated-room p {
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 600;
-    color: #2193b0;
+    color: #388e3c;
+    margin-bottom: 15px;
 }
 
 .generated-room span {
-    background-color: #d1eff7;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-family: 'Courier New', Courier, monospace;
     font-weight: 700;
-    color: #0d6e85;
+    color: #4CAF50;
+    font-size: 1.2em;
 }
 
-/* --- Chat Section Styling --- */
-#chat-section {
-    max-width: 900px; /* Full width for chat, adjust as needed */
-    height: 85vh; /* Take up more vertical space */
+/* Chat Section Specific Styles */
+.chat-container {
     display: flex;
     flex-direction: column;
-    text-align: left; /* Align chat content left */
-    overflow: hidden; /* Hide scrollbars, messages container handles it */
-    gap: 0; /* Remove gap set by .card */
+    height: 85vh; /* Adjust height as needed */
+    max-height: 85vh; /* Ensure it doesn't exceed */
+    padding: 0; /* Remove padding from card to extend chat area */
+    overflow: hidden; /* Hide scrollbars of the container */
 }
 
 .chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #f0f0f0;
-    margin-bottom: 15px;
+    padding: 15px 30px;
+    background-color: #4CAF50;
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .room-title {
-    font-size: 1.8rem;
-    color: #2193b0;
+    margin: 0;
+    font-size: 1.5em;
     font-weight: 600;
 }
 
 .room-title span {
     font-weight: 700;
-    color: #0d6e85;
-}
-
-.header-actions .btn {
-    margin-left: 10px;
 }
 
 .chat-main {
     display: flex;
-    flex: 1; /* Allows chat main to grow and take available space */
-    overflow: hidden; /* Important for inner scrolling containers */
+    flex: 1;
+    overflow: hidden;
+    background-color: #fcfcfc;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
-/* --- Users Sidebar --- */
+/* Users Sidebar */
 .users-sidebar {
-    background-color: #f7f7f7;
-    border-right: 1px solid #eee;
+    width: 250px;
+    background-color: #e8f5e9; /* Light green for sidebar */
     padding: 20px;
-    width: 250px; /* Fixed width for desktop */
-    min-width: 200px;
+    border-right: 1px solid #e0e0e0;
     overflow-y: auto;
-    border-radius: 0 0 0 15px; /* Rounded bottom-left only */
-    display: flex; /* Make it a flex container */
-    flex-direction: column; /* Stack content vertically */
-    height: 100%; /* Take full height of parent */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .users-sidebar h3 {
-    font-size: 1.2rem;
-    color: #555;
+    margin-top: 0;
     margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    color: #388e3c;
+    font-size: 1.2em;
 }
 
-#users {
+.users-sidebar ul {
     list-style: none;
-    flex-grow: 1; /* Allow user list to fill space */
+    padding: 0;
+    margin: 0;
 }
 
-#users li {
+.users-sidebar li {
     padding: 8px 0;
-    font-size: 0.95rem;
-    color: #444;
+    color: #333;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    border-bottom: 1px dashed #c8e6c9;
 }
 
-#users li .user-icon {
-    color: #2193b0;
+.users-sidebar li:last-child {
+    border-bottom: none;
 }
 
-#users li .admin-badge {
-    background-color: #2193b0;
-    color: #fff;
-    font-size: 0.75rem;
-    padding: 2px 7px;
-    border-radius: 5px;
-    margin-left: 5px;
-    font-weight: 600;
+.user-icon {
+    margin-right: 8px;
+    color: #4CAF50;
 }
 
-#users li .kick-button {
-    background: none;
+.admin-badge {
+    background-color: #FFC107;
+    color: #333;
+    padding: 3px 8px;
+    border-radius: 15px;
+    font-size: 0.75em;
+    font-weight: 700;
+    margin-left: 10px;
+}
+
+.kick-button {
+    background-color: #f44336;
+    color: white;
     border: none;
-    color: #e74c3c;
-    cursor: pointer;
-    margin-left: auto; /* Push to the right */
-    padding: 5px;
-    font-size: 0.9rem;
     border-radius: 5px;
-    transition: background-color 0.2s ease;
+    padding: 5px 10px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-#users li .kick-button:hover {
-    background-color: rgba(231, 76, 60, 0.1);
+.kick-button:hover {
+    background-color: #da190b;
 }
 
-/* --- Message Area --- */
+/* Message Area */
 .message-area {
-    flex: 1; /* Takes remaining space */
+    flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 0 20px 20px 20px; /* Adjusted padding */
-    position: relative; /* For typing indicator positioning */
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden; /* Ensure messages don't overflow the input area */
 }
 
 .messages-container {
-    flex: 1; /* Allow messages to grow */
-    overflow-y: auto; /* Make messages scrollable */
+    flex: 1;
+    overflow-y: auto; /* Scroll messages */
     padding-right: 10px; /* Space for scrollbar */
     margin-bottom: 15px;
 }
 
-/* Individual Message Styling */
+/* Message Styles */
 .message {
-    background: #f0f0f0;
-    padding: 12px 18px;
-    border-radius: 15px;
-    margin-bottom: 12px;
-    max-width: 80%; /* Limit message width */
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    border-radius: 18px;
+    max-width: 70%;
     position: relative;
-    word-wrap: break-word; /* Ensure long words break */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.message.sent {
-    background: #2193b0; /* Color for messages sent by the current user */
-    color: #fff;
-    align-self: flex-end; /* Align to the right */
-    border-bottom-right-radius: 5px; /* Flatten corner for sent messages */
-}
-
-.message.received {
-    background: #e8f9fd; /* Color for messages received from others */
-    color: #333;
-    align-self: flex-start; /* Align to the left */
-    border-bottom-left-radius: 5px; /* Flatten corner for received messages */
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .message .sender-name {
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 0.9em;
     margin-bottom: 5px;
-    color: inherit; /* Inherit color for sent messages */
-    display: block; /* Ensure name is on its own line */
-}
-
-.message.received .sender-name {
-    color: #2193b0; /* Specific color for received sender names */
+    display: block;
 }
 
 .message .message-text {
-    font-size: 1rem;
-    margin-bottom: 5px;
+    font-size: 1em;
+    color: #333;
+    display: block;
 }
 
 .message .message-info {
-    font-size: 0.75rem;
-    color: rgba(0, 0, 0, 0.5); /* Lighter color for time */
+    font-size: 0.75em;
+    color: #888;
+    margin-top: 5px;
+    display: block;
     text-align: right;
-    display: block; /* Ensure time is on its own line */
 }
 
-.message.sent .message-info {
-    color: rgba(255, 255, 255, 0.7); /* Lighter color for time in sent messages */
+.message.sent {
+    background-color: #DCF8C6; /* Light green for sent messages */
+    align-self: flex-end; /* Align to the right */
+    margin-left: auto; /* Push to the right */
+    border-bottom-right-radius: 4px; /* Pointy corner */
 }
 
+.message.received {
+    background-color: #E8E8E8; /* Light grey for received messages */
+    align-self: flex-start; /* Align to the left */
+    margin-right: auto; /* Push to the left */
+    border-bottom-left-radius: 4px; /* Pointy corner */
+}
 
-/* Message Options (Edit/Delete/React) */
+.message.system {
+    background-color: #FFF3E0; /* Light orange for system messages */
+    color: #6D4C41;
+    text-align: center;
+    font-style: italic;
+    font-size: 0.9em;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Message Options (React/Edit/Delete) */
 .message-options {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    display: flex;
-    gap: 3px;
-    opacity: 0; /* Hidden by default */
-    transition: opacity 0.2s ease-in-out;
+    top: -10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    padding: 3px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    display: none; /* Hidden by default */
 }
 
 .message:hover .message-options {
-    opacity: 1; /* Show on hover */
+    display: flex; /* Show on hover */
 }
 
 .message-options button {
     background: none;
     border: none;
-    color: #666;
-    font-size: 0.85rem;
+    font-size: 1.1em;
     cursor: pointer;
-    padding: 3px;
+    padding: 4px 6px;
+    transition: background-color 0.2s;
     border-radius: 3px;
-    transition: background-color 0.2s ease;
-}
-
-.message.sent .message-options button {
-    color: rgba(255, 255, 255, 0.8);
 }
 
 .message-options button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: #eee;
 }
 
-.message.sent .message-options button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Reactions Container */
+/* Reactions */
 .reactions-container {
-    display: flex;
-    gap: 5px;
     margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid rgba(0, 0, 0, 0.05); /* Separator */
+    font-size: 0.8em;
+    color: #666;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-end; /* Align reactions to the right of the bubble */
 }
 
 .reaction-bubble {
-    background-color: rgba(0, 0, 0, 0.08);
-    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.05);
     padding: 3px 8px;
-    font-size: 0.8em;
-    display: flex;
-    align-items: center;
-    gap: 3px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-.message.sent .reactions-container {
-    border-top-color: rgba(255, 255, 255, 0.2);
+.reaction-bubble:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
-.message.sent .reaction-bubble {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Typing Indicator */
-.typing-indicator {
-    padding: 8px 15px;
-    background-color: #f7f7f7;
-    border-radius: 10px;
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 10px;
-    text-align: left;
-}
 
 /* Message Input Area */
 .message-input-area {
     display: flex;
-    gap: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
 }
 
-.message-input-area #messageInput {
-    flex: 1; /* Allows input to grow */
-    border-radius: 50px; /* Pill shape */
-    padding: 12px 20px;
-    background-color: #f8f8f8;
-    border-color: #eee;
+.message-input-area input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
 }
 
-.message-input-area #messageInput:focus {
-    border-color: #2193b0;
-    box-shadow: 0 0 0 3px rgba(33, 147, 176, 0.1);
+.message-input-area input:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
 }
 
-/* --- Overlays (Loading, Error, Modals) --- */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+/* Typing Indicator */
+.typing-indicator {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+    height: 20px; /* Reserve space */
 }
 
+/* Utility Classes */
 .hidden {
     display: none !important;
 }
 
-.spinner {
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid #fff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 15px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading-text {
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: 500;
-}
-
-.error-modal, .confirm-modal, .kick-modal {
-    background: #fff;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    width: 90%;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.error-modal p, .confirm-modal p, .kick-modal p {
-    font-size: 1.1rem;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.error-modal button, .confirm-modal button, .kick-modal button {
-    width: 100%;
-    margin-top: 10px; /* Space between buttons */
-}
-.error-modal button:first-of-type, .confirm-modal button:first-of-type, .kick-modal button:first-of-type {
-    margin-top: 0;
-}
-
-
-/* --- Mobile Responsiveness --- */
+/* Responsive Design */
 @media (max-width: 768px) {
     body {
-        align-items: flex-start; /* Start from top on smaller screens */
-        padding-top: 20px;
+        padding: 10px;
+        align-items: flex-start; /* Align to top on smaller screens */
     }
 
     .container {
-        margin: 10px;
-        flex-direction: column; /* Stack login and chat vertically */
+        padding: 10px;
     }
 
     .card {
-        padding: 25px;
-        max-width: 100%; /* Allow full width */
-        margin-bottom: 20px; /* Space between cards when stacked */
+        padding: 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
     }
 
     .card-title {
-        font-size: 1.8rem;
-    }
-
-    .room-section h2 {
-        font-size: 1.1rem;
+        font-size: 1.6em;
+        margin-bottom: 20px;
     }
 
     .btn {
         padding: 10px 20px;
-        font-size: 0.9rem;
+        font-size: 0.9em;
+    }
+
+    .small-btn {
+        margin-right: 5px;
+        margin-top: 8px;
     }
 
     .chat-header {
-        flex-direction: column; /* Stack room title and actions */
-        align-items: flex-start;
-        gap: 10px;
-        padding-bottom: 15px;
+        padding: 10px 20px;
+        font-size: 1.2em;
     }
 
-    .header-actions {
-        width: 100%;
-        display: flex;
-        justify-content: space-around; /* Distribute buttons */
-    }
-
-    .header-actions .btn {
-        margin-left: 0; /* Remove specific margin */
-        flex: 1; /* Allow buttons to take equal width */
+    .room-title {
+        font-size: 1.2em;
     }
 
     .chat-main {
-        flex-direction: column; /* Stack users sidebar and message area */
+        flex-direction: column;
     }
 
     .users-sidebar {
-        width: 100%; /* Full width on mobile */
-        height: auto; /* Auto height based on content */
-        max-height: 250px; /* Limit height for scrolling */
+        width: 100%; /* Take full width when shown */
+        height: auto;
         border-right: none;
-        border-bottom: 1px solid #eee;
-        border-radius: 15px 15px 0 0; /* Rounded top corners */
-        padding: 15px;
-    }
-
-    .users-sidebar.hidden {
-        display: none; /* Hide when toggled */
+        border-bottom: 1px solid #e0e0e0;
+        max-height: 200px; /* Limit height of user list on mobile */
     }
 
     .message-area {
-        padding: 15px;
-        flex-grow: 1; /* Allow message area to take remaining space */
-    }
-
-    .messages-container {
-        height: calc(85vh - 200px); /* Adjust height for mobile keyboard/header */
-        min-height: 250px; /* Minimum height for messages */
-        padding-right: 5px;
+        padding: 10px;
     }
 
     .message {
-        max-width: 95%; /* Allow messages to be wider on small screens */
-        padding: 10px 15px;
-        border-radius: 12px;
+        max-width: 90%;
+        padding: 10px 12px;
     }
 
-    .message-input-area {
-        flex-direction: row; /* Keep input and send button side-by-side */
-    }
-
-    .message-input-area #messageInput {
-        padding: 10px 15px;
-        font-size: 0.95rem;
-    }
-
-    .send-btn {
-        padding: 8px 15px; /* Adjust send button size */
-    }
-}
-
-/* Additional adjustments for very small screens */
-@media (max-width: 480px) {
-    .card {
-        padding: 20px;
-    }
-    .card-title {
-        font-size: 1.6rem;
-    }
-    .room-section h2 {
-        font-size: 1rem;
-    }
-    .btn {
-        font-size: 0.85rem;
-        padding: 8px 15px;
-    }
-    .generated-room p {
-        font-size: 0.95rem;
-    }
-    .header-actions .btn {
-        font-size: 0.8rem;
-    }
-    .users-sidebar h3 {
-        font-size: 1.1rem;
-    }
-    .users-sidebar li {
-        font-size: 0.9rem;
-    }
-    .message {
-        font-size: 0.95rem;
-    }
-    .message .sender-name {
-        font-size: 0.9rem;
-    }
     .message .message-info {
-        font-size: 0.7rem;
+        font-size: 0.7em;
     }
 }
