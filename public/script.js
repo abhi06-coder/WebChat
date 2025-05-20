@@ -46,12 +46,14 @@ function hideError() {
     errorOverlay.classList.add('hidden');
 }
 
-function showConfirmLeaveModal() {
-    confirmLeaveOverlay.classList.remove('hidden');
-}
-
+// --- IMPORTANT: Moved this function definition up ---
 function hideConfirmLeaveModal() {
     confirmLeaveOverlay.classList.add('hidden');
+}
+// --- End of moved function ---
+
+function showConfirmLeaveModal() {
+    confirmLeaveOverlay.classList.remove('hidden');
 }
 
 function cancelLeave() {
@@ -162,7 +164,7 @@ window.leaveRoom = function() {
     currentRoomCode = '';
     currentUserName = '';
     currentAdminId = '';
-    hideConfirmLeaveModal();
+    hideConfirmLeaveModal(); // This call should now work
     hideLoading();
     hideError();
     location.reload();
@@ -227,11 +229,11 @@ socket.on('chat-message', (data) => {
     if (data.userName === 'System') {
         messageElement.classList.add('system');
         messageElement.innerHTML = `<span class="message-text">${data.text}</span>
-                                    <span class="message-info">${data.time}</span>`;
+                                     <span class="message-info">${data.time}</span>`;
     } else {
         messageElement.innerHTML = `<span class="sender-name">${data.userName}</span>
-                                    <span class="message-text">${data.text}</span>
-                                    <span class="message-info">${data.time}</span>`;
+                                     <span class="message-text">${data.text}</span>
+                                     <span class="message-info">${data.time}</span>`;
 
         const optionsDiv = document.createElement('div');
         optionsDiv.classList.add('message-options');
@@ -384,6 +386,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('roomInput').value = preRoom;
     }
 
+    // These calls should now work without error because the functions are defined above
     hideLoading();
     hideError();
     hideConfirmLeaveModal();
