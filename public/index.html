@@ -1,99 +1,80 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <title>Private Chat Rooms</title>
-
-  <link rel="stylesheet" href="style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectify Chat - Private Rooms</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
+<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen flex items-center justify-center p-4 font-sans antialiased">
 
-<body>
+    <div id="login" class="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full text-center">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Welcome to Connectify Chat</h2>
 
-  <div id="login">
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-3">Enter Your Name</h3>
+            <input type="text" id="nameInput" placeholder="Your name" autocomplete="off"
+                   class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg">
+        </div>
 
-    <h3>Enter Your Name</h3>
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-700 mb-3">Join Existing Room</h3>
+            <input type="text" id="roomInput" placeholder="e.g. abc123" autocomplete="off"
+                   class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg mb-2">
+            <input type="password" id="joinPassword" placeholder="Room password"
+                   class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg mb-4">
+            <button type="button" id="joinRoomBtn"
+                    class="w-full bg-green-600 text-white p-3 rounded-md font-semibold hover:bg-green-700 transition duration-300 ease-in-out text-lg">
+                Join Room
+            </button>
+        </div>
 
-    <input type="text" id="nameInput" placeholder="Your name" autocomplete="off"><br><br>
+        <div class="text-xl font-semibold text-gray-700 my-6">OR</div>
 
+        <div>
+            <input type="password" id="createPassword" placeholder="Set a password for room"
+                   class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg mb-4">
+            <button type="button" id="generateRoomBtn"
+                    class="w-full bg-blue-600 text-white p-3 rounded-md font-semibold hover:bg-blue-700 transition duration-300 ease-in-out text-lg">
+                Generate Private Room
+            </button>
 
+            <div id="generatedRoom" class="mt-6 p-4 bg-gray-100 rounded-md" style="display:none;">
+                <p class="text-lg text-gray-800 mb-2">Room Code: <span id="newRoomCode" class="font-bold text-blue-700 text-xl"></span></p>
+                <button type="button" id="copyLinkBtn"
+                        class="bg-purple-600 text-white p-2 rounded-md font-semibold hover:bg-purple-700 transition duration-300 ease-in-out text-base">
+                    Copy Invite Link
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <h3>Join Existing Room</h3>
+    <div id="chat" class="hidden flex-col h-full bg-white rounded-lg shadow-2xl p-4 max-w-2xl w-full">
+        <div class="flex items-center justify-between p-4 border-b border-gray-300">
+            <h2 class="text-xl font-semibold">Room: <span id="roomName"></span></h2>
+            <button id="leaveRoomBtn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">Leave Room</button>
+        </div>
 
-    <input type="text" id="roomInput" placeholder="e.g. abc123" autocomplete="off"><br>
+        <div class="flex flex-grow overflow-hidden">
+            <div id="usersContainer" class="w-1/4 p-4 border-r border-gray-200 overflow-y-auto">
+                <h3 class="text-lg font-semibold mb-2 text-gray-700">Online Users</h3>
+                <ul id="users" class="list-none space-y-1">
+                    </ul>
+            </div>
 
-    <input type="password" id="joinPassword" placeholder="Room password"><br>
+            <div id="messages" class="flex-grow p-4 overflow-y-auto space-y-2">
+                </div>
+        </div>
+        
+        <div id="typingIndicator" class="text-sm text-gray-500 p-2"></div>
+        <div class="flex p-4 border-t border-gray-300">
+            <input type="text" id="messageInput" placeholder="Type your message..." class="flex-grow p-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="sendMessageBtn" class="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 transition">Send</button>
+        </div>
+    </div>
 
-    <button type="button" onclick="joinChat(false)">Join Room</button><br><br>
-
-
-
-    <h3>OR</h3>
-
-    <input type="password" id="createPassword" placeholder="Set a password for room"><br>
-
-    <button type="button" onclick="generateRoom()">Generate Private Room</button>
-
-
-
-    <div id="generatedRoom" style="display:none;">
-
-      <p>Room Code: <span id="newRoomCode"></span></p>
-
-      <button type="button" onclick="copyLink()">Copy Invite Link</button>
-
-    </div>
-
-  </div>
-
-
-
-  <div id="chat" style="display: none;">
-
-    <h3>Room: <span id="roomName"></span></h3>
-
-    <h4>Online Users</h4>
-
-    <ul id="users"></ul>
-
-    <div id="messages"></div>
-
-    <input id="messageInput" placeholder="Type your message...">
-
-    <button type="button" onclick="sendMessage()">Send</button>
-
-  </div>
-
-
-
-  <script src="/socket.io/socket.io.js"></script>
-
-  <script>
-
-    // Autofill room code if shared via invite link
-
-    window.addEventListener('DOMContentLoaded', () => {
-
-      const params = new URLSearchParams(window.location.search);
-
-      const preRoom = params.get('room');
-
-      if (preRoom) {
-
-        document.getElementById('roomInput').value = preRoom;
-
-      }
-
-    });
-
-  </script>
-
-  <script src="script.js"></script>
-
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
 </body>
-
 </html>
