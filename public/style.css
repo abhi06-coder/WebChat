@@ -1,232 +1,159 @@
+/*
+ * Custom styles for Connectify Chat
+ * These styles are meant to complement Tailwind CSS,
+ * focusing on unique component designs and overrides.
+ */
+
+/* Global Typography & Base (Minimal, as Tailwind handles most) */
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #e0eafc, #cfdef3);
-  color: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Background gradient moved to index.html body class for Tailwind consistency */
+    /* display, justify-content, align-items, min-height handled by Tailwind on body */
+    /* color: #333; is handled by Tailwind's default text-gray-800 or specific classes */
 }
 
-#login, #chat {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 500px;
-  text-align: center;
-}
+/* Specific elements for unique styling */
 
-h3, h4 {
-  margin-bottom: 10px;
-}
-
-input, button {
-  font-size: 1rem;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  margin-bottom: 10px;
-  width: 100%;
-  max-width: 300px;
-  box-sizing: border-box;
-}
-
-button {
-  background-color: #4e89ff;
-  color: white;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-button:hover {
-  background-color: #2f6de0;
-}
-
-#generatedRoom {
-  margin-top: 10px;
-}
-
+/* Room code display */
 #newRoomCode {
-  display: inline-block;
-  background-color: #e6f0ff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-family: monospace;
-  font-size: 1.1em;
-  color: #2f6de0;
-  font-weight: bold;
+    /* Tailwind handles font-size, font-weight, color */
+    background-color: #e6f0ff; /* Retained custom light blue background */
+    padding: 6px 12px; /* Retained custom padding */
+    border-radius: 8px; /* Retained custom border-radius */
+    font-family: monospace; /* Important for code-like appearance */
+    /* display: inline-block; - handled by Tailwind's inline-block or flex parent */
 }
 
-#users {
-  list-style-type: none;
-  padding: 0;
-  margin: 10px 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
+/* Online Users List Items */
 #users li {
-  background-color: #d1e6ff;
-  color: #333;
-  margin: 4px;
-  padding: 6px 12px;
-  border-radius: 8px;
+    background-color: #d1e6ff; /* Custom background for user tags */
+    color: #333; /* Custom text color */
+    margin: 4px; /* Custom margin between user tags */
+    padding: 6px 12px; /* Custom padding */
+    border-radius: 8px; /* Custom border-radius */
 }
 
+/* Messages container - height controlled by flexbox in HTML */
 #messages {
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background: #f9f9f9;
-  height: 250px;
-  overflow-y: auto;
-  margin: 15px 0;
-  padding: 10px;
-  width: 100%;
-  text-align: left;
-  box-sizing: border-box;
+    /* border, border-radius, background, padding, width, text-align, box-sizing
+       are mostly handled by Tailwind classes in index.html (bg-gray-50 p-4 rounded-md overflow-y-auto border border-gray-200) */
+    /* The height will be managed by flex-grow in the parent chat container for responsiveness */
+    overflow-y: auto; /* Ensure scrolling is retained */
 }
 
-#messages div {
-  margin-bottom: 10px;
-  padding: 8px;
-  background: #e7f0ff;
-  border-radius: 10px;
-  word-wrap: break-word;
-}
-
-#messageInput {
-  width: calc(100% - 90px);
-  max-width: calc(100% - 90px);
-  margin-right: 5px;
-}
-
-#chat button {
-  width: auto;
-  padding: 10px 15px;
-}
-
+/* Individual message styling */
 .message {
-  background-color: #e7f0ff;
-  border-radius: 10px;
-  padding: 8px 12px;
-  margin-bottom: 10px;
-  max-width: 75%;
-  clear: both;
+    background-color: #e7f0ff; /* Custom light blue for messages */
+    border-radius: 10px; /* Custom rounded corners */
+    padding: 8px 12px; /* Custom padding inside message bubble */
+    margin-bottom: 10px; /* Spacing between messages */
+    max-width: 75%; /* Limit message width */
+    clear: both; /* Important for float-based layouts (though flexbox might negate this need) */
+    word-wrap: break-word; /* Ensure long words break */
 }
 
+/* "My" message styling (sent by current user) */
 .message.me {
-  background-color: #cce5ff;
-  margin-left: auto;
-  text-align: right;
+    background-color: #cce5ff; /* Slightly darker blue for 'my' messages */
+    margin-left: auto; /* Pushes 'my' messages to the right */
+    text-align: right; /* Aligns text within 'my' message to the right */
 }
 
+/* Message timestamp */
 .message .time {
-  font-size: 0.8em;
-  color: #666;
-  display: block;
-  margin-top: 4px;
+    font-size: 0.8em; /* Smaller font size */
+    color: #666; /* Gray color for timestamps */
+    display: block; /* Ensures timestamp is on its own line */
+    margin-top: 4px; /* Spacing above timestamp */
 }
 
+/* Action buttons for messages (e.g., delete, edit) */
 .actions {
-  opacity: 0;
-  transform: scale(0.9);
-  transition: all 0.2s ease;
+    opacity: 0; /* Hidden by default */
+    transform: scale(0.9); /* Slightly scaled down */
+    transition: all 0.2s ease; /* Smooth transition for appearance */
 }
 
 .message.show-actions .actions {
-  opacity: 1;
-  transform: scale(1);
+    opacity: 1; /* Visible when 'show-actions' class is present */
+    transform: scale(1); /* Full size when visible */
 }
 
 .actions button {
-  font-size: 0.8em;
-  margin: 2px;
-  background: #f0f0f0;
-  color: #333;
-  border: 1px solid #ccc;
+    font-size: 0.8em; /* Smaller font for action buttons */
+    margin: 2px; /* Spacing between action buttons */
+    background: #f0f0f0; /* Light gray background */
+    color: #333; /* Dark text */
+    border: 1px solid #ccc; /* Light border */
+    /* Override Tailwind's default button styles for this specific context */
+    width: auto !important; /* Ensure buttons don't take full width here */
+    max-width: unset !important; /* Remove max-width restriction */
+    padding: 6px 10px !important; /* Smaller padding */
+    border-radius: 5px !important; /* Slightly smaller border-radius */
+    display: inline-block !important; /* Ensure they lay out inline */
 }
 
+/* Message reactions */
 .reactions {
-  margin-top: 5px;
-  font-size: 0.9em;
-  color: #555;
+    margin-top: 5px; /* Spacing above reactions */
+    font-size: 0.9em; /* Smaller font size */
+    color: #555; /* Gray color for reactions */
 }
 
 .reactions span {
-  margin-right: 6px;
-  background: #e0eaff;
-  padding: 3px 6px;
-  border-radius: 12px;
-  display: inline-block;
+    margin-right: 6px; /* Spacing between reaction emojis/counts */
+    background: #e0eaff; /* Light purple background for reaction tags */
+    padding: 3px 6px; /* Padding inside reaction tags */
+    border-radius: 12px; /* Pill-shaped */
+    display: inline-block; /* Allows side-by-side layout */
 }
 
+/* Typing indicator */
 #typingIndicator {
-  font-size: 0.9em;
-  color: #888;
-  font-style: italic;
-  margin: 5px 0;
+    font-size: 0.9em; /* Smaller font */
+    color: #888; /* Gray color */
+    font-style: italic; /* Italic text */
+    margin: 5px 0; /* Spacing */
 }
 
+/* Action Menu (e.g., for right-click context menu) */
 #actionMenu div {
-  padding: 8px 12px;
-  cursor: pointer;
+    padding: 8px 12px; /* Padding for menu items */
+    cursor: pointer; /* Pointer cursor for clickable items */
 }
 
 #actionMenu div:hover {
-  background-color: #f0f0f0;
+    background-color: #f0f0f0; /* Hover effect for menu items */
 }
 
+/* Custom Scrollbar Styles for messages */
 #messages::-webkit-scrollbar {
-  width: 6px;
+    width: 6px; /* Width of the scrollbar */
 }
 
 #messages::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
+    background: #ccc; /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Rounded scrollbar thumb */
 }
 
+/* Toast Notifications */
 .toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 999;
+    position: fixed; /* Fixed position relative to viewport */
+    bottom: 20px; /* 20px from bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust to truly center */
+    background: #333; /* Dark background */
+    color: white; /* White text */
+    padding: 10px 20px; /* Padding */
+    border-radius: 10px; /* Rounded corners */
+    opacity: 0; /* Hidden by default */
+    pointer-events: none; /* Not interactive when hidden */
+    transition: opacity 0.3s ease; /* Smooth fade in/out */
+    z-index: 999; /* High z-index to appear on top */
 }
 
 .toast.show {
-  opacity: 1;
-  pointer-events: auto;
+    opacity: 1; /* Visible when 'show' class is present */
+    pointer-events: auto; /* Interactive when visible */
 }
 
-@media (max-width: 400px) {
-  input, button {
-    width: 100%;
-    font-size: 0.9rem;
-  }
-
-  #messageInput {
-    margin-bottom: 10px;
-    margin-right: 0;
-  }
-
-  #chat, #login {
-    padding: 20px;
-  }
-
-  #messageInput, #chat button {
-    width: 100%;
-    display: block;
-  }
-}
