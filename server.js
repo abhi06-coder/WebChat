@@ -1,64 +1,43 @@
 const express = require('express');
-const http = require('http').createServer(express()); // FIX: This is still wrong
-const io = require('socket.io')(http);
+const http = require('http');
+const socketIo = require('socket.io');
 const path = require('path');
 const { MongoClient } = require('mongodb');
 
-// CORRECTED EXPRESS/HTTP/SOCKET.IO SETUP:
-// 1. Create the Express application instance FIRST
 const app = express();
+const httpServer = http.createServer(app);
+const ioServer = socketIo(httpServer);
 
-// 2. Then, create the HTTP server using that 'app' instance
-// This is the CRITICAL FIX for "Cannot GET /"
-const httpServer = require('http').createServer(app); // Renamed to httpServer for clarity
-
-// 3. Attach Socket.IO to the 'httpServer'
-const ioServer = require('socket.io')(httpServer); // Renamed to ioServer for clarity
-
-// --- MongoDB Connection Setup ---
-// IMPORTANT: Replace this placeholder with your actual, URL-encoded connection string.
-// Also, set this as an environment variable named MONGODB_URI on Render.
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://abhi:Abhinav%4006@webchat.1vvhscv.mongodb.net/chatdb?retryWrites=true&w=majority&appName=webchat";
-
 const client = new MongoClient(MONGODB_URI);
-let roomsCollection; // This will hold our reference to the 'rooms' collection
+let roomsCollection;
 
 async function connectToDatabase() {
     try {
         await client.connect();
         console.log("Connected to MongoDB Atlas!");
-        const db = client.db('chatdb'); // Specify your database name (e.g., 'chatdb')
-        roomsCollection = db.collection('rooms'); // Specify your collection name for rooms
-
-        // Optional: Create a unique index on 'code' to prevent duplicate room codes
-        // This helps handle concurrent room creation attempts gracefully.
+        const db = client.db('chatdb');
+        roomsCollection = db.collection('rooms');
         await roomsCollection.createIndex({ code: 1 }, { unique: true }).catch(err => {
-            if (err.code !== 48) { // 48 is "Index already exists"
+            if (err.code !== 48) {
                 console.warn("Could not create unique index on rooms.code:", err.message);
             }
         });
-
     } catch (error) {
         console.error("MongoDB connection error:", error);
-        // Exit the process if we can't connect to the database, as the app won't function
         process.exit(1);
     }
 }
-// -----------------------------------------------------------
 
-// Configure Express to serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Define the route for the root URL to send your index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// In-memory storage for active users and reactions (these are NOT persistent across server restarts)
-const messageReactions = {}; // Stores reactions for active messages
-const usersInRooms = {};    // Stores who is currently in which room
+const messageReactions = {};
+const usersInRooms = {};
 
-// --- Database Functions ---
 async function getRoom(code) {
     try {
         return await roomsCollection.findOne({ code: code });
@@ -71,13 +50,9 @@ async function getRoom(code) {
 async function createRoom(code, password, adminId) {
     try {
         await roomsCollection.insertOne({ code: code, password: password, admin_id: adminId });
-        console.log(`Room created in MongoDB: ${code}`);
         return true;
     } catch (error) {
-        if (error.code === 11000) { // Duplicate key error
-            console.warn(`Attempted to create duplicate room code: ${code}`);
-            return false;
-        }
+        if (error.code === 11000) return false;
         console.error("Error creating room in MongoDB:", error);
         return false;
     }
@@ -102,113 +77,181 @@ async function deleteRoom(code) {
         return false;
     }
 }
-// -----------------------------------------------------------
+
+// --- CORRECTED HELPER FUNCTION FOR ROOM CLEANUP ---
+// Now accepts the 'socket' object as its first argument
+async function cleanupRoomAndNotify(socket, roomCode, userName, isDisconnected = false) {
+    const socketId = socket.id; // Get the socket ID from the passed socket object
+
+    if (!roomCode || !usersInRooms[roomCode] || !userName) {
+        console.log(`Skipping cleanup for user ${socketId}: No roomCode or userName.`);
+        // Ensure socket properties are cleared even if no room data found
+        delete socket.roomCode;
+        delete socket.userName;
+        return;
+    }
+
+    // Ensure the user is actually in the room's users list before deleting
+    if (usersInRooms[roomCode][socketId]) {
+        delete usersInRooms[roomCode][socketId];
+        console.log(`User ${userName} (${socketId}) removed from room ${roomCode}.`);
+    } else {
+        console.log(`User ${userName} (${socketId}) not found in room ${roomCode}'s list.`);
+    }
+
+    try {
+        const room = await getRoom(roomCode);
+        let currentAdminId = room?.admin_id;
+        const remainingUserIds = Object.keys(usersInRooms[roomCode]);
+        const numRemainingUsers = remainingUserIds.length;
+
+        if (socketId === currentAdminId) { // If the admin is leaving/disconnecting
+            if (numRemainingUsers > 0) {
+                currentAdminId = remainingUserIds[0]; // Assign first remaining user as new admin
+                await updateAdmin(roomCode, currentAdminId);
+                console.log(`Admin for room ${roomCode} reassigned to ${currentAdminId}.`);
+            } else {
+                // Admin left and no users left, delete room
+                await deleteRoom(roomCode);
+                delete usersInRooms[roomCode];
+                if (messageReactions[roomCode]) {
+                    delete messageReactions[roomCode];
+                }
+                console.log(`Room ${roomCode} deleted due to all users leaving (admin was last).`);
+                return; // Room is gone, no more updates needed
+            }
+        } else { // If a non-admin leaves/disconnects
+            if (numRemainingUsers === 0) {
+                await deleteRoom(roomCode);
+                delete usersInRooms[roomCode];
+                if (messageReactions[roomCode]) {
+                    delete messageReactions[roomCode];
+                }
+                console.log(`Room ${roomCode} deleted as last non-admin left.`);
+                return; // Room is gone, no more updates needed
+            }
+        }
+
+        // If the room still exists (not deleted above), send updates to remaining users
+        const updatedRoomState = await getRoom(roomCode); // Get latest room state from DB
+        const users = Object.entries(usersInRooms[roomCode]).map(([id, userData]) => ({
+            id,
+            name: userData.name,
+            isAdmin: id === updatedRoomState?.admin_id
+        }));
+
+        ioServer.to(roomCode).emit('room-users', {
+            users: users,
+            adminId: updatedRoomState?.admin_id
+        });
+
+        ioServer.to(roomCode).emit('chat-message', {
+            userName: 'System',
+            text: `${userName} ${isDisconnected ? 'disconnected' : 'left'} the chat.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            messageId: `sys-${Date.now()}`,
+            senderId: 'system'
+        });
+
+    } catch (error) {
+        console.error("Error during cleanupRoomAndNotify:", error);
+    } finally {
+        // These properties are on the 'socket' object passed as an argument, so this works now
+        delete socket.roomCode;
+        delete socket.userName;
+    }
+}
+// --- END CORRECTED HELPER FUNCTION ---
 
 
-// Socket.IO event handlers
-ioServer.on('connection', socket => { // Use ioServer here
+// Socket.IO Event Handlers
+ioServer.on('connection', socket => {
     console.log('A user connected:', socket.id);
 
     socket.on('join-room', async ({ userName, roomCode, password, create }) => {
-        if (!roomCode || roomCode.trim() === "" || roomCode.length > 20) {
+        const trimmedRoomCode = roomCode.trim();
+        const trimmedUserName = userName.trim();
+        const trimmedPassword = password ? password.trim() : "";
+
+        if (!trimmedRoomCode || trimmedRoomCode.length > 20) {
             socket.emit('room-error', 'Invalid room code. Please enter a valid code (max 20 characters).');
             return;
         }
-        if (!userName || userName.trim() === "") {
+        if (!trimmedUserName) {
             socket.emit('room-error', 'Please enter your name.');
             return;
         }
-        if (password && password.length > 30) {
+        if (trimmedPassword.length > 30) {
             socket.emit('room-error', 'Invalid password (max 30 characters).');
             return;
         }
 
-        roomCode = roomCode.trim();
-        userName = userName.trim();
-        password = password ? password.trim() : ""; // Ensure password is trimmed or empty string
-
-        const room = await getRoom(roomCode); // Uses MongoDB getRoom
+        let room = await getRoom(trimmedRoomCode);
 
         if (!room) {
             if (!create) {
                 socket.emit('room-error', 'Room does not exist. Do you want to create it?');
                 return;
             }
-            if (!password) {
+            if (!trimmedPassword) {
                 socket.emit('room-error', 'A password is required to create a new private room.');
                 return;
             }
-            if (await createRoom(roomCode, password, socket.id)) { // Uses MongoDB createRoom
-                usersInRooms[roomCode] = {};
+            if (await createRoom(trimmedRoomCode, trimmedPassword, socket.id)) {
+                usersInRooms[trimmedRoomCode] = {};
+                room = await getRoom(trimmedRoomCode); // Re-fetch the newly created room to get its admin_id
             } else {
-                socket.emit('room-error', 'Failed to create the room (room might already exist or DB error). Please try again.');
+                socket.emit('room-error', 'Failed to create the room. It might already exist or there was a database error. Please try again.');
                 return;
             }
         } else {
-            if (room.password !== password) {
+            if (room.password !== trimmedPassword) {
                 socket.emit('room-error', 'Incorrect password.');
                 return;
             }
         }
 
-        socket.join(roomCode);
-        socket.userName = userName;
-        socket.roomCode = roomCode;
+        socket.join(trimmedRoomCode);
+        socket.userName = trimmedUserName;
+        socket.roomCode = trimmedRoomCode;
 
-        if (!usersInRooms[roomCode]) usersInRooms[roomCode] = {};
-        usersInRooms[roomCode][socket.id] = { name: userName, isAdmin: false }; // Store user data including isAdmin initially as false
+        if (!usersInRooms[trimmedRoomCode]) usersInRooms[trimmedRoomCode] = {};
+        usersInRooms[trimmedRoomCode][socket.id] = { name: trimmedUserName, isAdmin: false };
 
-        // Update admin status for the joining user if they are the admin
-        if (room?.admin_id === socket.id || create) { // If joining existing room as admin or creating, set isAdmin
-            usersInRooms[roomCode][socket.id].isAdmin = true;
-            if (create && !room) { // If we just created the room, ensure DB has this admin
-                 await updateAdmin(roomCode, socket.id); // This will update it in DB
-            }
-        }
+        const currentRoomState = await getRoom(trimmedRoomCode);
 
+        const users = Object.entries(usersInRooms[trimmedRoomCode]).map(([id, userData]) => ({
+            id,
+            name: userData.name,
+            isAdmin: id === currentRoomState?.admin_id
+        }));
 
-        try {
-            // Fetch the room again to ensure we have the very latest admin_id from the DB
-            const currentRoomState = await getRoom(roomCode);
+        ioServer.to(trimmedRoomCode).emit('room-users', {
+            users: users,
+            adminId: currentRoomState?.admin_id
+        });
 
-            // Construct the list of users with correct admin status
-            const users = Object.entries(usersInRooms[roomCode]).map(([id, userData]) => ({
-                id,
-                name: userData.name,
-                isAdmin: id === currentRoomState?.admin_id
-            }));
-
-            ioServer.to(roomCode).emit('room-users', { // Use ioServer here
-                users: users,
-                adminId: currentRoomState?.admin_id
-            });
-
-            ioServer.to(roomCode).emit('chat-message', { // Use ioServer here
-                userName: 'System',
-                text: `${userName} joined the chat.`,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                messageId: `sys-${Date.now()}`,
-                senderId: 'system'
-            });
-        } catch (error) {
-            console.error("Error during post-join actions (MongoDB context):", error);
-            socket.emit('room-error', 'An error occurred after joining. Please try again.');
-        }
+        ioServer.to(trimmedRoomCode).emit('chat-message', {
+            userName: 'System',
+            text: `${trimmedUserName} joined the chat.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            messageId: `sys-${Date.now()}`,
+            senderId: 'system'
+        });
     });
 
     socket.on('chat-message', ({ roomCode, userName, text, time, messageId }) => {
-        ioServer.to(roomCode).emit('chat-message', { userName, text, time, messageId, senderId: socket.id }); // Use ioServer here
+        ioServer.to(roomCode).emit('chat-message', { userName, text, time, messageId, senderId: socket.id });
     });
 
-    socket.on('react-message', ({ roomCode, messageId, emoji, userName }) => {
+    socket.on('react-message', ({ roomCode, messageId, emoji }) => {
         if (!messageReactions[roomCode]) messageReactions[roomCode] = {};
         if (!messageReactions[roomCode][messageId]) messageReactions[roomCode][messageId] = {};
 
-        // Simple toggle for reactions by a user
         if (messageReactions[roomCode][messageId][socket.id] === emoji) {
-            delete messageReactions[roomCode][messageId][socket.id]; // Remove reaction if already present
+            delete messageReactions[roomCode][messageId][socket.id];
         } else {
-            messageReactions[roomCode][messageId][socket.id] = emoji; // Set or change reaction
+            messageReactions[roomCode][messageId][socket.id] = emoji;
         }
 
         const reactionsSummary = {};
@@ -222,28 +265,23 @@ ioServer.on('connection', socket => { // Use ioServer here
             count: reactionsSummary[emoji]
         }));
 
-        ioServer.to(roomCode).emit('update-reactions', { messageId, reactions: reactionsArray }); // Use ioServer here
+        ioServer.to(roomCode).emit('update-reactions', { messageId, reactions: reactionsArray });
     });
 
-
     socket.on('edit-message', ({ roomCode, messageId, newText }) => {
-        // Basic authorization: ensure only the sender can edit their own message
-        // In a real app, you'd store senderId with the message permanently.
-        if (messageId.startsWith(socket.id + '_')) { // Checks if messageId was generated by this socket
-            ioServer.to(roomCode).emit('edit-message', { messageId, newText }); // Use ioServer here
+        if (messageId.startsWith(socket.id + '_')) {
+            ioServer.to(roomCode).emit('edit-message', { messageId, newText });
         }
     });
 
-    socket.on('delete-message', async (messageId) => {
-        const roomCode = socket.roomCode;
+    socket.on('delete-message', async ({ roomCode, messageId }) => {
         if (!roomCode) return;
 
-        // In a real app, you'd fetch the message from DB and check senderId/admin status.
-        const isAdmin = (await getRoom(roomCode))?.admin_id === socket.id;
+        const room = await getRoom(roomCode);
+        const isAdmin = room?.admin_id === socket.id;
 
-        if (messageId.startsWith(socket.id + '_') || isAdmin) { // Only sender or admin can delete
-            ioServer.to(roomCode).emit('delete-message', messageId); // Use ioServer here
-            // Clean up reactions for the deleted message
+        if (messageId.startsWith(socket.id + '_') || isAdmin) {
+            ioServer.to(roomCode).emit('delete-message', messageId);
             if (messageReactions[roomCode] && messageReactions[roomCode][messageId]) {
                 delete messageReactions[roomCode][messageId];
             }
@@ -251,104 +289,44 @@ ioServer.on('connection', socket => { // Use ioServer here
     });
 
     socket.on('typing', ({ roomCode, userName }) => {
-        socket.to(roomCode).emit('user-typing', userName); // Use socket.to to send to others in room
+        socket.to(roomCode).emit('user-typing', userName);
     });
 
     socket.on('stop-typing', (roomCode) => {
-        socket.to(roomCode).emit('user-stop-typing'); // Use socket.to
+        socket.to(roomCode).emit('user-stop-typing');
     });
 
     socket.on('kick-user', async ({ roomCode, targetId }) => {
-        const currentRoom = await getRoom(roomCode); // Get room state from DB
-        if (currentRoom?.admin_id === socket.id) { // Only admin can kick
-            const targetSocket = ioServer.sockets.sockets.get(targetId); // Use ioServer here
+        const currentRoom = await getRoom(roomCode);
+        if (currentRoom?.admin_id === socket.id) {
+            const targetSocket = ioServer.sockets.sockets.get(targetId);
             if (targetSocket && targetSocket.roomCode === roomCode) {
                 targetSocket.emit('kicked');
                 targetSocket.leave(roomCode);
-                delete usersInRooms[roomCode][targetId];
-
-                // Update users list for remaining members
-                const updatedUsers = Object.entries(usersInRooms[roomCode]).map(([id, userData]) => ({
-                    id,
-                    name: userData.name,
-                    isAdmin: id === currentRoom.admin_id
-                }));
-                ioServer.to(roomCode).emit('room-users', { users: updatedUsers, adminId: currentRoom.admin_id }); // Use ioServer here
-                ioServer.to(roomCode).emit('chat-message', { // Use ioServer here
-                    userName: 'System',
-                    text: `${targetSocket.userName} was kicked from the chat.`,
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    messageId: `sys-${Date.now()}`,
-                    senderId: 'system'
-                });
+                // Call cleanup for the kicked user, passing the targetSocket itself
+                await cleanupRoomAndNotify(targetSocket, roomCode, targetSocket.userName, false);
             }
         } else {
             socket.emit('room-error', 'Only the room administrator can kick users.');
         }
     });
 
+   socket.on('leave-room', async () => {
+    console.log(`User <span class="math-inline">\{socket\.userName\} \(</span>{socket.id}) explicitly leaving room ${socket.roomCode}.`);
+    await cleanupRoomAndNotify(socket, socket.roomCode, socket.userName, false);
+    // This is the critical line to ensure the client gets the signal to reset
+    socket.emit('room-left'); // <--- THIS MUST BE HERE
+});
 
+    // Handle user disconnect (browser close, network issue, etc.)
     socket.on('disconnect', async () => {
-        console.log('A user disconnected:', socket.id);
-        const roomCode = socket.roomCode;
-        if (!roomCode || !usersInRooms[roomCode] || !socket.userName) return;
-
-        const userName = socket.userName;
-
-        delete usersInRooms[roomCode][socket.id];
-
-        try {
-            const room = await getRoom(roomCode); // Uses MongoDB getRoom
-            let newAdminId = room?.admin_id;
-
-            if (socket.id === room?.admin_id) { // If the admin is leaving
-                const remainingUserIds = Object.keys(usersInRooms[roomCode]);
-                if (remainingUserIds.length > 0) {
-                    newAdminId = remainingUserIds[0]; // Assign first remaining user as new admin
-                    await updateAdmin(roomCode, newAdminId); // Update in DB
-                } else {
-                    // No users left, delete room
-                    await deleteRoom(roomCode); // Uses MongoDB deleteRoom
-                    delete usersInRooms[roomCode];
-                    delete messageReactions[roomCode]; // Clean up reactions for the room
-                    console.log(`Room ${roomCode} deleted due to all users leaving.`);
-                    return; // Room is gone, no more updates needed
-                }
-            }
-
-            // After potential admin change, update room-users for remaining
-            const currentRoomState = await getRoom(roomCode); // Get latest room state from DB
-            const users = Object.entries(usersInRooms[roomCode]).map(([id, userData]) => ({
-                id,
-                name: userData.name,
-                isAdmin: id === currentRoomState?.admin_id // Use updated adminId from DB
-            }));
-
-            ioServer.to(roomCode).emit('room-users', { // Use ioServer here
-                users: users,
-                adminId: currentRoomState?.admin_id
-            });
-
-            ioServer.to(roomCode).emit('chat-message', { // Use ioServer here
-                userName: 'System',
-                text: `${userName} left the chat.`,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                messageId: `sys-${Date.now()}`,
-                senderId: 'system'
-            });
-
-        } catch (error) {
-            console.error("Error during disconnect (MongoDB context):", error);
-        } finally {
-            // Clean up socket properties regardless of DB outcome
-            delete socket.roomCode;
-            delete socket.userName;
-        }
+        console.log(`User ${socket.userName || socket.id} disconnected.`);
+        // Pass the socket object itself to cleanupRoomAndNotify
+        await cleanupRoomAndNotify(socket, socket.roomCode, socket.userName, true);
     });
 });
 
-// Start the server ONLY AFTER successfully connecting to the database
 const PORT = process.env.PORT || 3000;
 connectToDatabase().then(() => {
-    httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`)); // Use httpServer here
+    httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
